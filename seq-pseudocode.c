@@ -43,6 +43,6 @@ while (start < width - 1 || start < height - 1){
   }
   
   iteration++;
-  start = 2*(start + 1) - 1;
+  start = 2*(start + 1) - 1; // start = 2^iteration - 1
   offset *= 2;
 }
