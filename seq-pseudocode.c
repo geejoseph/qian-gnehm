@@ -1,8 +1,9 @@
 // Verifies edge between pixel (x1, y2) and pixel (x2, y2)
 verify_edge(int x1, int y1, int x2, int y2);
 
-// May need to make pixels structs? To store size, next, rgb color
-
+// Need pixel/node struct. To store size, next, rgb color
+// New color
+// Merge criterion
 // Need to implement find and join
 
 int width, height; // given
@@ -10,6 +11,9 @@ int width, height; // given
 int iteration = 0;
 int start = 0;
 int offset = 2;
+
+// Can change order of sweep, paper order is biased to horizontal?
+
 
 int x, y, limit, n;
 while (start < width - 1 || start < height - 1){
@@ -72,10 +76,10 @@ while (start < width - 1 || start < height - 1){
       }
     }
   }
-  
-  // very similar across x and y?
-          
+            
   iteration++;
   start = 2*(start + 1) - 1; // start = 2^iteration - 1
   offset *= 2;
 }
+
+// Post-processing: get rid of regions that are too small
