@@ -1,1 +1,1 @@
-Hi! Thank you for looking at our project. Here is our [proposal](https://geejoseph.github.io/qian-gnehm/15418_Project_Proposal.pdf).
+Hi! Thank you for looking at our project. Here is our [proposal](https://geejoseph.github.io/qian-gnehm/15418_Project_Proposal.pdf). Here is our [checkpoint](https://geejoseph.github.io/qian-gnehm/15418_Project_Checkpoint.pdf).
