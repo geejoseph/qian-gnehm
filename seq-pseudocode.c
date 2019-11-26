@@ -1,6 +1,9 @@
 // Verifies edge between pixel (x1, y2) and pixel (x2, y2)
 verify_edge(int x1, int y1, int x2, int y2);
 
+struct region {
+    
+}
 // Need pixel/node struct. To store size, next, rgb color
 // New color
 // Merge criterion
