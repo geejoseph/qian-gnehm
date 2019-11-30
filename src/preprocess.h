@@ -3,7 +3,8 @@
 
 #include <vector>
 #include <tuple>
+#include "pixel.h"
 
-std::tuple<std::vector<std::vector<std::vector<int>>>,int,int> preprocess(std::string image);
+std::tuple<std::vector<std::vector<Pixel>>,int,int> preprocess(std::string image);
 
 #endif

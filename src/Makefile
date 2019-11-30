@@ -5,7 +5,6 @@ LIBS += -L/usr/local/lib -ljpeg
 
 APP_NAME=solution
 OBJDIR=objs
-
 default: $(APP_NAME)
 
 .PHONY: dirs clean
@@ -28,5 +27,8 @@ $(OBJDIR)/%.o: %.cpp
 #	$(CXX) $< $(CXXFLAGS) -c -o $@
 
 $(OBJDIR)/main.o: preprocess.h
+
+$(OBJDIR)/preprocess.o: preprocess.h
+
 #$(OBJDIR)/main.o: CycleTimer.h
 
