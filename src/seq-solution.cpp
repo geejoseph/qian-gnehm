@@ -12,10 +12,12 @@ inline bool mergeCriterion(Pixel p1, Pixel p2, int t){
 
 Pixel newColor(Pixel A, Pixel B, Metadata findA, Metadata findB){
   int totalSize = findA.size + findB.size;
-  int newR = (A.r * findA.size + B.r * findB.size)/(totalSize);
-  int newG = (A.g * findA.size + B.g * findB.size)/(totalSize);
-  int newB = (A.b * findA.size + B.b * findB.size)/(totalSize);
-  return Pixel(newR,newG,newB);
+  Pixel newP;
+  newP.r = (A.r * findA.size + B.r * findB.size)/(totalSize);
+  newP.g = (A.g * findA.size + B.g * findB.size)/(totalSize);
+  newP.b = (A.b * findA.size + B.b * findB.size)/(totalSize);
+
+  return newP;
 }
 
 Metadata find(std::vector<std::vector<Metadata>> &meta,int srow,int scol){

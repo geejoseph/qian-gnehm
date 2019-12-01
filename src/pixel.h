@@ -1,25 +1,21 @@
 #ifndef __PIXEL_H_
 #define __PIXEL_H_
+#include <cstdint>
 
+typedef struct Pixel_t{
+  uint8_t r,g,b;
 
-class Pixel
+} Pixel;
+/*class Pixel
 {
   public:
-    int r,g,b;
+    uint8_t r,g,b;
     Pixel() = default;
-    Pixel(int x,int y, int z){
+    Pixel(uint8_t x,uint8_t y, uint8_t z){
       r=x;
       g=y;
       b=z;
     }
-    inline int getR(const Pixel x){
-      return x.r;
-    }
-    inline int getG(const Pixel x){
-      return x.g;
-    }
-    inline int getB(const Pixel x){
-      return x.b;
-    }
 };
+*/
 #endif

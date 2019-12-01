@@ -16,8 +16,12 @@ std::tuple<std::vector<std::vector<Pixel>>,int,int> preprocess(std::string image
 
   for(int row = 0; row<height; row++){
     for(int col = 0; col<width; col++){
-      boost::gil::rgb8_pixel_t px = *const_view(img).at(row,col);
-      pixels[row][col] = Pixel((int)px[0],(int)px[1],(int)px[2]);
+      boost::gil::rgb8_pixel_t px = *const_view(img).at(col,row);
+      Pixel temp;
+      temp.r = (int)px[0];
+      temp.g = (int)px[1];
+      temp.b = (int)px[2];
+      pixels[row][col] = temp;//Pixel((int)px[0],(int)px[1],(int)px[2]);
     }
   }
   return std::make_tuple(pixels,height,width);
