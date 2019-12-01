@@ -15,7 +15,7 @@ dirs:
 clean:
 		/bin/rm -rf $(OBJDIR) *~ $(APP_NAME)
 
-OBJS=$(OBJDIR)/main.o $(OBJDIR)/preprocess.o 
+OBJS=$(OBJDIR)/main.o $(OBJDIR)/preprocess.o $(OBJDIR)/seq-solution.o 
 
 $(APP_NAME): dirs $(OBJS)
 		$(CXX) $(CXXFLAGS) $(LIBS) -o $@ $(OBJS) -lm -lpthread
@@ -26,9 +26,10 @@ $(OBJDIR)/%.o: %.cpp
 #$(OBJDIR)/%.o: %.cpp
 #	$(CXX) $< $(CXXFLAGS) -c -o $@
 
-$(OBJDIR)/main.o: preprocess.h
+$(OBJDIR)/main.o: preprocess.h imgSeg.h
 
 $(OBJDIR)/preprocess.o: preprocess.h
 
+$(OBJDIR)/seq-solution.o: imgSeg.h
 #$(OBJDIR)/main.o: CycleTimer.h
 
