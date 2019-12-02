@@ -21,7 +21,7 @@ int offset = 2;
 int x, y, limit, n;
 while (start < width - 1 || start < height - 1){
   for (y = 0; y < height; y++) {
-    for (x = start; x < width; x += offset) {
+    for (x = start; x <= width-offset; x += offset) {
       verify_edge(x, y, x + 1, y);
     }
   }
