@@ -50,7 +50,7 @@ int main(){
   cout<<"done blurring"<<endl;
   //savePPM(img,"img/einstein.ppm",width,height);
   //return 0;
-  process(img,width,height);
+  seq_process(img,width,height);
 
   //postprocess(img,width,height);
   cout<<"after preprocess"<<endl;

@@ -6,14 +6,14 @@
 #include <cstdint>
 #include <assert.h>
 
-int global_width;
-int global_height;
+static int global_width;
+static int global_height;
 inline bool mergeCriterion(Pixel p1, Pixel p2, int t){
   return ((int)p1.r - (int)p2.r)*((int)p1.r - (int)p2.r) + ((int)p1.g - (int)p2.g)*((int)p1.g -(int) p2.g) +
     ((int)p1.b - (int)p2.b) * ((int)p1.b - (int)p2.b) < t*t;
 }
 
-Pixel newColor(Pixel A, Pixel B, int sizeA, int sizeB){
+static Pixel newColor(Pixel A, Pixel B, int sizeA, int sizeB){
   int totalSize = sizeA + sizeB;
   Pixel newP;
   newP.r = (uint8_t)(((int)A.r * sizeA +(int) B.r * sizeB)/(totalSize));
@@ -24,7 +24,7 @@ Pixel newColor(Pixel A, Pixel B, int sizeA, int sizeB){
   return newP;
 }
 
-int find(std::vector<std::vector<int>> &next,int srow,int scol){
+static int find(std::vector<std::vector<int>> &next,int srow,int scol){
   int row = srow;
   int col = scol;
   while(1){
@@ -48,7 +48,7 @@ int find(std::vector<std::vector<int>> &next,int srow,int scol){
   }
 }
 
-void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vector<int>> &next,
+static void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vector<int>> &next,
     std::vector<std::vector<int>> &size, int col1, int row1, int col2, int row2) {
   //sanity check
   assert(col1< global_width && col1>=0 && col2 < global_width && col2 >= 0 && row1 < global_height && row1 >=0
@@ -89,8 +89,14 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
   return;
 
 }
+static void process_mixed(std::vector<std::vector<Pixel>> &pixels,int width,int height);
 
-void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
+void seq_process(std::vector<std::vector<Pixel>> &pixels,int width, int height){
+  process_mixed(pixels,width,height);
+  return;
+}
+
+static void process_mixed(std::vector<std::vector<Pixel>>& pixels,int width, int height){
   global_height = height;
   global_width = width;
   std::vector<std::vector<int>> next(height,std::vector<int>(width,-1));

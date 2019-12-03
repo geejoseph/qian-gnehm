@@ -162,7 +162,7 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
   return;
 }
 
-void cu-process(std::vector<std::vector<Pixel>> &pixels, int width, int height){
+void cu_process(std::vector<std::vector<Pixel>> &pixels, int width, int height){
 
-
+  return;
 }
