@@ -35,11 +35,12 @@ static void savePPM(const vector<vector<Pixel>> pixels,
   return;
 }
 
-int main(){
-  
+int main(int argc, char **argv){
+  string filename = std::string(argv[1]);
+  cout<<filename<<endl;
   cout<<"before preprocess"<<endl;
-  tuple<vector<vector<Pixel>>,int,int> imgData = 
-    preprocess("img/einstein.jpg");
+  tuple<vector<vector<Pixel>>,int,int> imgData =
+    preprocess(filename);
   int height = get<1>(imgData);
   int width = get<2>(imgData);
   cout<<"original width: "<<width<<" original height "<<height<<endl;
@@ -55,7 +56,8 @@ int main(){
   //postprocess(img,width,height);
   cout<<"after preprocess"<<endl;
   cout<<"new width"<<img[0].size()<<" new height "<<img.size()<<endl;
-  savePPM(img,"img/einstein.ppm",width,height);
+  savePPM(img, "result.ppm",width,height);
+  //savePPM(img,"img/einstein.ppm",width,height);
   cout<<"cleanup"<<endl;
   return 0;
 }

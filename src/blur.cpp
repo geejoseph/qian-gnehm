@@ -32,7 +32,7 @@ static void printKernel(const double (&kernel)[KERNEL_SIZE][KERNEL_SIZE]){
     for(int j=0;j<KERNEL_SIZE;j++){
       std::cout<<kernel[i][j]<<"\t";
     }
-    std::cout<<std::endl;
+    //std::cout<<std::endl;
   }
 }
 static Pixel convolve(const std::vector<std::vector<Pixel>> &pixels,int i ,

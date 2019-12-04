@@ -70,17 +70,17 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
     int bSize = size[bRow][bCol];
 
     if(mergeCriterion(A,B,30)){
-      printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
+      //printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
       if(aSize>bSize){
         pixels[aRow][aCol] = newColor(A,B, aSize, bSize);
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
+        //printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
         next[bRow][bCol] = aIndex;
         size[aRow][aCol] += bSize;
       }
       else{
         pixels[bRow][bCol] = newColor(A, B, aSize, bSize);
 
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
+        //printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
         next[aRow][aCol] = bIndex;
         size[bRow][bCol] += aSize;
       }
@@ -105,7 +105,7 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
-    std::cout<<"row comparison done"<<std::endl;
+    //std::cout<<"row comparison done"<<std::endl;
     int count = 0;
     for(int y = 0; y<height; y*=2){
       if(count == 1){
@@ -125,13 +125,13 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
       count++;
     }
 
-    std::cout<<"second loop done"<<std::endl;
+    //std::cout<<"second loop done"<<std::endl;
     for ( int y = start; y<=height-offset; y += offset){
       for(int x =0 ; x< width; x++){
         verify_edge(pixels,next,size,x,y,x,y+1);
-      }  
+      }
     }
-    std::cout<<"third loop done"<<std::endl;
+    //std::cout<<"third loop done"<<std::endl;
     for(int y = start; y <= height-offset; y+= offset){
       for(int x = 0; x<= width-offset; x+=offset){
         limit = offset -1;
