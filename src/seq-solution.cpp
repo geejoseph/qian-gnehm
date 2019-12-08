@@ -113,7 +113,7 @@ static void process_mixed(std::vector<std::vector<Pixel>>& pixels,int width, int
     }
     std::cout<<"row comparison done"<<std::endl;
     int count = 0;
-    for(int y = 0; y<height; y*=2){
+    for(int y = 0; y<height; y+=offset/2){
       if(count == 1){
         y = offset/2;
       }

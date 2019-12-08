@@ -26,3 +26,4 @@ std::tuple<std::vector<std::vector<Pixel>>,int,int> preprocess(std::string image
   }
   return std::make_tuple(pixels,height,width);
 }
+
