@@ -5,6 +5,7 @@
 #include <vector>
 #include "pixel.h"
 
-void seq_process(std::vector<std::vector<Pixel>>& pixels,int width, int height);
+void seq_process(std::vector<Pixel>& pixels,int width, int height);
 
+void cu_process(std::vector<Pixel> &pixels,int width, int height);
 #endif

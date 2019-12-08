@@ -48,7 +48,7 @@ static int find(std::vector<std::vector<int>> &next,int srow,int scol){
   }
 }
 
-static void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vector<int>> &next,
+static void verify_edge(std::vector<Pixel> &pixels, std::vector<std::vector<int>> &next,
     std::vector<std::vector<int>> &size, int col1, int row1, int col2, int row2) {
   //sanity check
   assert(col1< global_width && col1>=0 && col2 < global_width && col2 >= 0 && row1 < global_height && row1 >=0
@@ -63,24 +63,26 @@ static void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std
   int bCol = bIndex % global_width;
 
   if(aRow != bRow || aCol != bCol){
-    Pixel A = pixels[aRow][aCol];
+    Pixel A = pixels[aRow*global_width+aCol];
     int aSize = size[aRow][aCol];
 
-    Pixel B = pixels[bRow][bCol];
+    Pixel B = pixels[bRow*global_width+bCol];
     int bSize = size[bRow][bCol];
 
     if(mergeCriterion(A,B,30)){
       printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
       if(aSize>bSize){
-        pixels[aRow][aCol] = newColor(A,B, aSize, bSize);
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
+        pixels[aRow*global_width+aCol] = newColor(A,B, aSize, bSize);
+        printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
+            pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
         next[bRow][bCol] = aIndex;
         size[aRow][aCol] += bSize;
       }
       else{
-        pixels[bRow][bCol] = newColor(A, B, aSize, bSize);
+        pixels[bRow*global_width+bCol] = newColor(A, B, aSize, bSize);
 
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
+        printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
+            pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
         next[aRow][aCol] = bIndex;
         size[bRow][bCol] += aSize;
       }
@@ -89,14 +91,14 @@ static void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std
   return;
 
 }
-static void process_mixed(std::vector<std::vector<Pixel>> &pixels,int width,int height);
+static void process_mixed(std::vector<Pixel> &pixels,int width,int height);
 
-void seq_process(std::vector<std::vector<Pixel>> &pixels,int width, int height){
+void seq_process(std::vector<Pixel> &pixels,int width, int height){
   process_mixed(pixels,width,height);
   return;
 }
 
-static void process_mixed(std::vector<std::vector<Pixel>>& pixels,int width, int height){
+static void process_mixed(std::vector<Pixel>& pixels,int width, int height){
   global_height = height;
   global_width = width;
   std::vector<std::vector<int>> next(height,std::vector<int>(width,-1));
@@ -159,7 +161,7 @@ static void process_mixed(std::vector<std::vector<Pixel>>& pixels,int width, int
       int index = find(next,i,j);
       int row = index / global_width;
       int col = index % global_width;
-      pixels[i][j]=pixels[row][col];
+      pixels[i*width + j]=pixels[row*width + col];
     }
   }
   return;
