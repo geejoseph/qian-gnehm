@@ -4,6 +4,7 @@
 #include <tuple>
 #include <vector>
 #include "preprocess.h"
+#include <omp.h>
 
 std::tuple<std::vector<std::vector<Pixel>>,int,int> preprocess(std::string image){
 
@@ -11,7 +12,7 @@ std::tuple<std::vector<std::vector<Pixel>>,int,int> preprocess(std::string image
   boost::gil::jpeg_read_image(image,img);
   int height = img.height();
   int width = img.width();
-  std::vector<std::vector<Pixel>> pixels(height, 
+  std::vector<std::vector<Pixel>> pixels(height,
       std::vector<Pixel>(width));
 
   for(int row = 0; row<height; row++){

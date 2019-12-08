@@ -5,6 +5,8 @@
 #include "imgSeg.h"
 #include <cstdint>
 #include <assert.h>
+#include <omp.h>
+double omp_get_wtime(void);
 
 int global_width;
 int global_height;
@@ -91,14 +93,28 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
 }
 
 void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
+  double start_time, end_time;
+  start_time = omp_get_wtime();
   global_height = height;
   global_width = width;
+
+  // Allocation
+  double alloc_start_time, alloc_end_time;
+  alloc_start_time = omp_get_wtime();
   std::vector<std::vector<int>> next(height,std::vector<int>(width,-1));
   std::vector<std::vector<int>> size(height,std::vector<int>(width,1));
+  alloc_end_time = omp_get_wtime();
   int start = 0;
   int offset = 2;
   int limit;
+  int iteration = 0;
+
+  // Sweeping
+  double sweeps_start_time, sweeps_end_time;
+  double iteration_start_time, iteration_end_time;
+  sweeps_start_time = omp_get_wtime();
   while(start < width - 1 || start < height -1){
+    iteration_start_time = omp_get_wtime();
     //Comparing along row
     for(int y =0;y<height;y++){
       for(int x = start;x<=width-offset;x+=offset){
@@ -118,8 +134,8 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
           limit = height - y -1;
         }
         for(int n=0;n<limit;n++){
-          verify_edge(pixels,next,size,x,y+n,x+1,y+n+1);
-          verify_edge(pixels,next,size,x+1,y+n,x,y+n+1);
+          verify_edge(pixels,next,size,x,  y+n,x+1,y+n+1);
+          verify_edge(pixels,next,size,x+1,y+n,x,  y+n+1);
         }
       }
       count++;
@@ -146,8 +162,16 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
     }
     start = 2*(start+1)-1;
     offset *=2;
+    iteration_end_time = omp_get_wtime();
+    printf("iteration %d took %f ms\n", iteration,
+            (iteration_end_time - iteration_start_time)*1000);
+    iteration++;
   }
+  sweeps_end_time = omp_get_wtime();
 
+  // Updating final colors for all pixels
+  double update_start_time, update_end_time;
+  update_start_time = omp_get_wtime();
   for(int i=0;i<height;i++){
     for(int j=0;j<width;j++){
       int index = find(next,i,j);
@@ -156,5 +180,15 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
       pixels[i][j]=pixels[row][col];
     }
   }
+  end_time = omp_get_wtime();
+  update_end_time = end_time;
+  double process_time, sweeps_time, alloc_time, update_time;
+  process_time = end_time - start_time;
+  sweeps_time = sweeps_end_time - sweeps_start_time;
+  alloc_time = alloc_end_time - alloc_start_time;
+  update_time = update_end_time - update_start_time;
+  printf("process: %f ms\nsweeps: %f\nalloc: %f ms\nupdate: %f ms\n",
+          process_time*1000, sweeps_time*1000, alloc_time*1000,
+          update_time*1000);
   return;
 }

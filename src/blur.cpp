@@ -3,6 +3,7 @@
 #include "blur.h"
 #include <cmath>
 #include <iostream>
+#include <omp.h>
 
 //CEILING HALF
 #define HALF_KERN_SIZE 2
@@ -32,7 +33,7 @@ static void printKernel(const double (&kernel)[KERNEL_SIZE][KERNEL_SIZE]){
     for(int j=0;j<KERNEL_SIZE;j++){
       std::cout<<kernel[i][j]<<"\t";
     }
-    //std::cout<<std::endl;
+    std::cout<<std::endl;
   }
 }
 static Pixel convolve(const std::vector<std::vector<Pixel>> &pixels,int i ,
@@ -56,7 +57,7 @@ void blur(std::vector<std::vector<Pixel>> &pixels,double sigma){
   double kernel[KERNEL_SIZE][KERNEL_SIZE];
   std::vector<std::vector<Pixel>> newPixels(pixels.size(),std::vector<Pixel>(pixels[0].size()));
   fillKernel(sigma,kernel);
-  printKernel(kernel);
+  //printKernel(kernel);
   for(int i=HALF_KERN_SIZE;i<(int)pixels.size()-HALF_KERN_SIZE;i++){
     for(int j=HALF_KERN_SIZE;j<(int)pixels[0].size()-HALF_KERN_SIZE;j++){
       newPixels[i][j] = convolve(pixels, i,j,kernel);
@@ -64,12 +65,12 @@ void blur(std::vector<std::vector<Pixel>> &pixels,double sigma){
     //std::cout<<"iterations"<<std::endl;
   }
 
-  std::cout<<"finished convolving";
+  //std::cout<<"finished convolving\n";
   for(int i=HALF_KERN_SIZE;i<(int)pixels.size() - HALF_KERN_SIZE;i++){
     for(int j = HALF_KERN_SIZE;j<(int)pixels[0].size() - HALF_KERN_SIZE;j++){
       pixels[i][j] = newPixels[i][j];
     }
   }
-  std::cout<<"about to return";
+  //std::cout<<"about to return";
   return;
 }

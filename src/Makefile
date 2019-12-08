@@ -18,7 +18,7 @@ clean:
 OBJS=$(OBJDIR)/main.o $(OBJDIR)/preprocess.o $(OBJDIR)/seq-solution.o $(OBJDIR)/blur.o
 
 $(APP_NAME): dirs $(OBJS)
-		$(CXX) $(CXXFLAGS) $(LIBS) -o $@ $(OBJS) -lm -lpthread
+		$(CXX) $(CXXFLAGS) $(LIBS) -o $@ $(OBJS) -lm -lpthread -fopenmp
 
 $(OBJDIR)/%.o: %.cpp
 		$(CXX) $< $(CXXFLAGS) -c -o  $@
