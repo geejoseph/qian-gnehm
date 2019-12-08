@@ -3,7 +3,7 @@ CXX=g++ -m64 -std=c++11 -fopenmp
 CXXFLAGS=-Iobjs/ -O3 -Wall
 LIBS += -L/usr/local/lib -ljpeg
 
-APP_NAME=par-solution
+APP_NAME=seq-solution
 OBJDIR=objs
 default: $(APP_NAME)
 
@@ -15,7 +15,7 @@ dirs:
 clean:
 		/bin/rm -rf $(OBJDIR) *~ $(APP_NAME)
 
-OBJS=$(OBJDIR)/main.o $(OBJDIR)/preprocess.o $(OBJDIR)/par-solution.o $(OBJDIR)/blur.o
+OBJS=$(OBJDIR)/main.o $(OBJDIR)/preprocess.o $(OBJDIR)/seq-solution.o $(OBJDIR)/blur.o
 
 $(APP_NAME): dirs $(OBJS)
 		$(CXX) $(CXXFLAGS) $(LIBS) -o $@ $(OBJS) -fopenmp -lm -lpthread
