@@ -37,7 +37,7 @@ int main(){
   
   cout<<"before preprocess"<<endl;
   tuple<vector<Pixel>,int,int> imgData = 
-    preprocess("img/World.jpg");
+    preprocess("img/einstein.jpg");
   int height = get<1>(imgData);
   int width = get<2>(imgData);
   cout<<"original width: "<<width<<" original height "<<height<<endl;
@@ -48,7 +48,7 @@ int main(){
   //savePPM(img,"img/einstein.ppm",width,height);
   //return 0;
   double startTime = CycleTimer::currentSeconds();
-  seq_process(img,width,height);
+  cu_process(img,width,height);
   double endTime = CycleTimer::currentSeconds();
   printf("Time: %3.f ms\n",1000.f *(endTime-startTime));
   savePPM(img,"img/einstein_cu.ppm",width,height);
