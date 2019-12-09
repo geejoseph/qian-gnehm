@@ -5,6 +5,7 @@
 #include "imgSeg.h"
 #include <cstdint>
 #include <assert.h>
+#include "CycleTimer.h"
 
 static int global_width;
 static int global_height;
@@ -70,19 +71,19 @@ static void verify_edge(std::vector<Pixel> &pixels, std::vector<std::vector<int>
     int bSize = size[bRow][bCol];
 
     if(mergeCriterion(A,B,30)){
-      printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
+      //printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
       if(aSize>bSize){
         pixels[aRow*global_width+aCol] = newColor(A,B, aSize, bSize);
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
-            pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
+        //printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
+        //    pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
         next[bRow][bCol] = aIndex;
         size[aRow][aCol] += bSize;
       }
       else{
         pixels[bRow*global_width+bCol] = newColor(A, B, aSize, bSize);
 
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
-            pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
+        //printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
+        //    pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
         next[aRow][aCol] = bIndex;
         size[bRow][bCol] += aSize;
       }
@@ -107,18 +108,15 @@ static void process_mixed(std::vector<Pixel>& pixels,int width, int height){
   int offset = 2;
   int limit;
   while(start < width - 1 || start < height -1){
+    double s = CycleTimer::currentSeconds();
     //Comparing along row
     for(int y =0;y<height;y++){
       for(int x = start;x<=width-offset;x+=offset){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
-    std::cout<<"row comparison done"<<std::endl;
-    int count = 0;
+    //std::cout<<"row comparison done"<<std::endl;
     for(int y = 0; y<height; y+=offset/2){
-      if(count == 1){
-        y = offset/2;
-      }
       for(int x = start;x<=width-offset;x+=offset){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
@@ -130,16 +128,15 @@ static void process_mixed(std::vector<Pixel>& pixels,int width, int height){
           verify_edge(pixels,next,size,x+1,y+n,x,y+n+1);
         }
       }
-      count++;
     }
 
-    std::cout<<"second loop done"<<std::endl;
+    //std::cout<<"second loop done"<<std::endl;
     for ( int y = start; y<=height-offset; y += offset){
       for(int x =0 ; x< width; x++){
         verify_edge(pixels,next,size,x,y,x,y+1);
       }  
     }
-    std::cout<<"third loop done"<<std::endl;
+    //std::cout<<"third loop done"<<std::endl;
     for(int y = start; y <= height-offset; y+= offset){
       for(int x = 0; x<= width-offset; x+=offset){
         limit = offset -1;
@@ -154,8 +151,13 @@ static void process_mixed(std::vector<Pixel>& pixels,int width, int height){
     }
     start = 2*(start+1)-1;
     offset *=2;
+
+    double e = CycleTimer::currentSeconds();
+
+    printf("Iter time: %.3f ms\n",1000.f * (e-s));
   }
 
+  double rs = CycleTimer::currentSeconds();
   for(int i=0;i<height;i++){
     for(int j=0;j<width;j++){
       int index = find(next,i,j);
@@ -164,5 +166,9 @@ static void process_mixed(std::vector<Pixel>& pixels,int width, int height){
       pixels[i*width + j]=pixels[row*width + col];
     }
   }
+
+  double re = CycleTimer::currentSeconds();
+
+  printf("Redir time: %.3f ms\n",1000.f *(re-rs));
   return;
 }

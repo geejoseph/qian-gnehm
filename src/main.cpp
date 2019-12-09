@@ -8,7 +8,7 @@
 #include <string>
 #include <cstdlib>
 #include <fstream>
-
+#include "CycleTimer.h"
 using namespace std;
 
 
@@ -27,10 +27,8 @@ static void savePPM(const vector<Pixel> &pixels,
       //printf("r:%d g:%d b:%d\n",(int)newPixel.r,(int)newPixel.g,(int)newPixel.b);
     }
   }*/
-  cout<<"about to save"<<endl;
   ofstream file(name,ios::out | ios::binary);
   file<<"P6\n" << width<<" "<<height<<"\n"<<255<<"\n";
-  cout<<"check"<<endl;
   file.write((char *)(&pixels[0]),width*height*sizeof(Pixel));
   return;
 }
@@ -39,7 +37,7 @@ int main(){
   
   cout<<"before preprocess"<<endl;
   tuple<vector<Pixel>,int,int> imgData = 
-    preprocess("img/einstein.jpg");
+    preprocess("img/World.jpg");
   int height = get<1>(imgData);
   int width = get<2>(imgData);
   cout<<"original width: "<<width<<" original height "<<height<<endl;
@@ -47,15 +45,12 @@ int main(){
   /*savePPM(img, "img/Cathedral_of_Learning.ppm",width,height);
   return 0;*/
   blur(img,0.8,width,height);
-  cout<<"done blurring"<<endl;
   //savePPM(img,"img/einstein.ppm",width,height);
   //return 0;
-  cu_process(img,width,height);
-
-  //postprocess(img,width,height);
-  cout<<"after preprocess"<<endl;
-  //cout<<"new width"<<img[0].size()<<" new height "<<img.size()<<endl;
+  double startTime = CycleTimer::currentSeconds();
+  seq_process(img,width,height);
+  double endTime = CycleTimer::currentSeconds();
+  printf("Time: %3.f ms\n",1000.f *(endTime-startTime));
   savePPM(img,"img/einstein_cu.ppm",width,height);
-  cout<<"cleanup"<<endl;
   return 0;
 }

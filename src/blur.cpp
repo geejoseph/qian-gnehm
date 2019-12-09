@@ -64,12 +64,10 @@ void blur(std::vector<Pixel> &pixels,double sigma,int width, int height){
     //std::cout<<"iterations"<<std::endl;
   }
 
-  std::cout<<"finished convolving";
   for(int i=HALF_KERN_SIZE;i<height - HALF_KERN_SIZE;i++){
     for(int j = HALF_KERN_SIZE;j<width - HALF_KERN_SIZE;j++){
       pixels[i*width+j] = newPixels[i*width+j];
     }
   }
-  std::cout<<"about to return";
   return;
 }
