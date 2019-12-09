@@ -5,10 +5,17 @@ Total time used by threads with clock? *real work*
 How to get good times for graphing iterations, diff images, diff steps
 Does any one of the 4 sweeps take most of the time? Rows vs. cols?
 Memory access patterns? Do more rows? Big diff?
-Possible to do two finds in parallel
+Currently: last and 2nd last iterations take longer in parallel: overhead
+Graph n_threads and speedup?
 
 TODO
-1. Second version of sequential and timing
-2. Rows and cols
-3. More fine-grained, thread for each part of row or col that owns regions
-4. Scheduling?
+1. More fine-grained, thread for each part of row or col that owns regions
+2. Try scheduling again?
+
+To get side-by-side image:
+./seq-solution img/Lakeside.jpg seq-result
+./par-solution img/Lakeside.jpg par-result
+convert par-result.ppm seq-result.ppm -append compare.ppm
+
+To get difference:
+compare -compose src par-result.ppm seq-result.ppm difference.ppm
