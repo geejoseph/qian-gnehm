@@ -99,9 +99,10 @@ int special_exp(int base, int exp) {
 }
 
 void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
-  double start_time, end_time, alloc_start_time, alloc_end_time, sweeps_start_time,
-  sweeps_end_time, iteration_start_time, iteration_end_time, update_start_time,
-  update_end_time, process_time, alloc_time, sweeps_time, update_time;
+  double start_time, end_time, alloc_start_time, alloc_end_time,
+         sweeps_start_time, sweeps_end_time, iteration_start_time,
+         iteration_end_time, update_start_time, update_end_time, process_time,
+         alloc_time, sweeps_time, update_time;
   start_time = omp_get_wtime();
   global_height = height;
   global_width = width;
@@ -122,7 +123,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     iteration_start_time = omp_get_wtime();
 
     //Comparing along row
-    #pragma omp parallel for schedule(auto)
+    #pragma omp parallel for schedule(dynamic)
     for (int y = 0; y < height; y++){
       for (int x = start; x <= width - offset; x += offset){
         verify_edge(pixels,next,size,x,y,x+1,y);
@@ -130,23 +131,18 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     }
     //std::cout<<"row comparison done"<<std::endl;
 
-    // same as loop below but y = 0
-    for(int x = start; x <= width - offset; x += offset){
-      limit = offset/2 - 1;
-      if(limit > height){
-        limit = height - 1;
+    int max_exp = ceil(log(height) - log(offset/2));
+    // log_height (offset/2), so we can write this loop
+    // y = 0, offset/2, offset, 2*offset, 4*offset, ... < height
+    #pragma omp parallel for schedule(dynamic) private(limit)
+    for(int exp = -1; exp < max_exp; exp++){
+      int y;
+      if (exp == -1) {
+        y = 0;
+      } else {
+        y = (offset/2) << exp;
       }
-      for(int n = 0; n < limit; n++){
-        verify_edge(pixels,next,size,x,  n,x+1,n+1);
-        verify_edge(pixels,next,size,x+1,n,x,  n+1);
-      }
-    }
-
-    int max_exp = ceil(log((double)height)/log((double((int)(offset/2))))) - 1;
-    // log_height (offset/2) - 1 (so we have y < height)
-    #pragma omp parallel for schedule(auto) private(limit)
-    for(int exp = 0; exp < max_exp; exp++){
-      int y = offset/2 << exp;
+      printf("%d\n", y);
       for(int x = start; x <= width - offset; x += offset){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
@@ -159,32 +155,10 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
         }
       }
     }
-
-    /*
-    int count = 0;
-    #pragma omp parallel for private(limit, count)
-    for(int y = 0; y < height; y *= 2){
-      if(count == 1){
-        y = offset/2;
-      }
-      for(int x = start; x <= width - offset; x += offset){
-        limit = offset/2 - 1;
-        //guarantee y+limit <= height
-        if(y + limit > height){
-          limit = height - y -1;
-        }
-        for(int n = 0; n < limit; n++){
-          verify_edge(pixels,next,size,x,  y+n,x+1,y+n+1);
-          verify_edge(pixels,next,size,x+1,y+n,x,  y+n+1);
-        }
-      }
-      count++;
-    }
-    */
     //std::cout<<"second loop done"<<std::endl;
 
     // Swapped x and y
-    #pragma omp parallel for schedule(auto)
+    #pragma omp parallel for schedule(dynamic)
     for (int x = 0; x < width; x++) {
       for (int y = start; y <= height-offset; y += offset){
         verify_edge(pixels,next,size,x,y,x,y+1);
@@ -193,7 +167,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     //std::cout<<"third loop done"<<std::endl;
 
 
-    #pragma omp parallel for schedule(auto) private(limit)
+    #pragma omp parallel for schedule(dynamic) private(limit)
     for (int x = 0; x <= width - offset; x += offset) {
       limit = offset - 1;
       if (x + limit > width) {
@@ -218,7 +192,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
 
   // Updating final colors for all pixels
   update_start_time = omp_get_wtime();
-  #pragma omp parallel for schedule(auto)
+  #pragma omp parallel for schedule(dynamic)
   for (int i=0;i<height;i++){
     for (int j=0;j<width;j++){
       int index = find(next,i,j);
