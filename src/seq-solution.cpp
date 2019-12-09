@@ -119,17 +119,13 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
     iteration_start_time = omp_get_wtime();
     //Comparing along row
     for(int y =0;y<height;y++){
-      for(int x = start;x<=width-offset;x+=offset){
+      for(int x = start;x<=width-2;x+=offset){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
     //std::cout<<"row comparison done"<<std::endl;
-    int count = 0;
-    for(int y = 0; y<height; y*=2){
-      if(count == 1){
-        y = offset/2;
-      }
-      for(int x = start;x<=width-offset;x+=offset){
+    for(int y = 0; y<=height-2; y*=2){
+      for(int x = start;x<=width-2;x+=offset){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
         if(y + limit > height){
@@ -140,18 +136,20 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
           verify_edge(pixels,next,size,x+1,y+n,x,  y+n+1);
         }
       }
-      count++;
+      if (y == 0) {
+        y = offset/2;
+      }
     }
 
     //std::cout<<"second loop done"<<std::endl;
-    for ( int y = start; y<=height-offset; y += offset){
+    for ( int y = start; y<=height-2; y += offset){
       for(int x =0 ; x< width; x++){
         verify_edge(pixels,next,size,x,y,x,y+1);
       }
     }
     //std::cout<<"third loop done"<<std::endl;
-    for(int y = start; y <= height-offset; y+= offset){
-      for(int x = 0; x<= width-offset; x+=offset){
+    for(int y = start; y <= height-2; y+= offset){
+      for(int x = 0; x<= width-2; x+=offset){
         limit = offset -1;
         if(x+limit>width){
           limit =width - x -1;

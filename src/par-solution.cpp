@@ -124,28 +124,19 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     iteration_start_time = omp_get_wtime();
 
     //Comparing along row
-    //chunksize = std::max(1, (height/n_procs)/chunkfactor);
+    //chunksize = std::max(1, /(n_procs*chunkfactor));
     #pragma omp parallel for //schedule(dynamic, chunksize)
-    for (int y = 0; y < height; y++){
-        for (int x = start; x <= width - offset; x += offset){
+    for (int x = start; x <= width - 2; x += offset){
+      for (int y = 0; y < height; y++){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
     //std::cout<<"row comparison done"<<std::endl;
 
-    int max_exp = ceil(log(height) - log(offset/2));
-    // log_height (offset/2), so we can write this loop
-    // y = 0, offset/2, offset, 2*offset, 4*offset, ... < height
-    //chunksize = std::max(1, (max_exp/n_procs)/chunkfactor);
+    //chunksize = std::max(1, /(n_procs*chunkfactor));
     #pragma omp parallel for private(limit) //schedule(dynamic, chunksize)
-    for(int exp = -1; exp < max_exp; exp++){
-      int y;
-      if (exp == -1) {
-        y = 0;
-      } else {
-        y = (offset/2) << exp;
-      }
-      for(int x = start; x <= width - offset; x += offset){
+    for(int x = start; x <= width-2; x += offset){
+      for(int y = 0; y <= height-2; y *= 2){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
         if(y + limit > height){
@@ -155,28 +146,31 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
           verify_edge(pixels,next,size,x,  y+n,x+1,y+n+1);
           verify_edge(pixels,next,size,x+1,y+n,x,  y+n+1);
         }
+        if (y == 0) {
+          y = offset/2;
+        }
       }
     }
     //std::cout<<"second loop done"<<std::endl;
 
     // Swapped x and y
-    //chunksize = std::max(1, (width/n_procs)/chunkfactor);
+    //chunksize = std::max(1, /(n_procs*chunkfactor));
     #pragma omp parallel for //schedule(dynamic, chunksize)
-    for (int x = 0; x < width; x++) {
-      for (int y = start; y <= height-offset; y += offset){
+    for (int y = start; y <= height-2; y += offset){
+      for (int x = 0; x < width; x++) {
         verify_edge(pixels,next,size,x,y,x,y+1);
       }
     }
     //std::cout<<"third loop done"<<std::endl;
 
-    //chunksize = std::max(1, (width/offset)/chunkfactor);
+    //chunksize = std::max(1, /(n_procs*chunkfactor));
     #pragma omp parallel for private(limit) //schedule(dynamic, chunksize)
-    for (int x = 0; x <= width - offset; x += offset) {
-      limit = offset - 1;
-      if (x + limit > width) {
-        limit = width - x - 1;
-      }
-      for (int y = start; y <= height-offset; y += offset){
+    for (int y = start; y <= height-2; y += offset){
+      for (int x = 0; x <= width-2; x += offset) {
+        limit = offset - 1;
+        if (x + limit > width) {
+          limit = width - x - 1;
+        }
         for (int n = 0; n < limit; n++){
           verify_edge(pixels,next,size,x+n,y,x+n+1,y+1);
           verify_edge(pixels,next,size,x+n+1,y,x+n,y+1);
