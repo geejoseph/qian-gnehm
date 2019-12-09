@@ -93,9 +93,9 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
     }
   }
   return;
-
 }
 
+// Parallelizing as much as can with one task per "worst-case region area"
 void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
   double start_time, end_time, alloc_start_time, alloc_end_time,
          sweeps_start_time, sweeps_end_time, iteration_start_time,
@@ -118,6 +118,13 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
   //int chunksize;
   //int n_procs = omp_get_num_procs();
 
+  int n_regions = global_width*global_height;
+  int new_region_width = 1; //dimension that this sweep isn't increasing
+  // Not great name
+  // n_regions halves after every col and row sweep
+  // but var needs to be halved before to keep track
+  // other thing doubles before every row sweep
+
   // Sweeping
   sweeps_start_time = omp_get_wtime();
   while (start < width - 1 || start < height -1){
@@ -126,7 +133,8 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     //Comparing along row
     //chunksize = std::max(1, /(n_procs*chunkfactor));
     #pragma omp parallel for //schedule(dynamic, chunksize)
-    for (int x = start; x <= width - 2; x += offset){
+    for (int r = 0;
+      //for (int x = start; x <= width - 2; x += offset){
       for (int y = 0; y < height; y++){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
