@@ -37,7 +37,7 @@ int main(){
   
   cout<<"before preprocess"<<endl;
   tuple<vector<Pixel>,int,int> imgData = 
-    preprocess("img/einstein.jpg");
+    preprocess("img/World.jpg");
   int height = get<1>(imgData);
   int width = get<2>(imgData);
   cout<<"original width: "<<width<<" original height "<<height<<endl;

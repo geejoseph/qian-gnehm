@@ -15,6 +15,7 @@
 #define BLOCK_WIDTH 16
 #define BLOCK_HEIGHT 16
 #define SHARED_BLOCK_DIM 32
+#define CHUNK_SIZE 512
 #define cudaCheckError(ans) cudaAssert((ans), __FILE__, __LINE__);
 inline void cudaAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
@@ -214,12 +215,12 @@ __device__ void shared_verify_edge(Pixel *pixels_temp, int *next_temp, int *size
 }
 static void attempt_1(std::vector<Pixel> &pixels, int width, int height);
 static void attempt_2(std::vector<Pixel> &pixels, int width, int height);
-//static void attempt_3(int *pixels, int width, int height);
+static void attempt_3(std::vector<Pixel> &pixels, int width, int height);
 
 void cu_process(std::vector<Pixel> &pixels, int width, int height){
   global_width = width;
   global_height = height;
-  attempt_2(pixels,width,height);
+  attempt_3(pixels,width,height);
   
   return;
 }
@@ -612,9 +613,145 @@ static void attempt_2(std::vector<Pixel> &pixels, int width, int height){
   return;
 }
 
-/*
-static void attempt_3(int *pixels, int width, int height){
+/*********************************************************************
+
+
+  ATTEMPT 3 "HYBRID SOLUTION"
+
+
+
+  *******************************************************************/
+
+__global__ void seq_continue(Pixel *pixels_cu,int * next_cu, int *size_cu,int csize, int width, int height){
+  int start = CHUNK_SIZE *2 - 1;
+  int offset = csize;
+  int limit;
+  while(start< width -1 || start < height -1){
+     //double s = CycleTimer::currentSeconds();
+    //Comparing along row
+    for(int y =0;y<height;y++){
+      for(int x = start;x<=width-offset;x+=offset){
+        verify_edge(pixels_cu,next_cu,size_cu,x,y,x+1,y,width,height);
+      }   
+    }   
+    //std::cout<<"row comparison done"<<std::endl;
+    for(int y = 0; y<height; y+=offset/2){
+      for(int x = start;x<=width-offset;x+=offset){
+        limit = offset/2 - 1;
+        //guarantee y+limit <= height
+        if(y + limit > height){
+          limit = height - y -1; 
+        }   
+        for(int n=0;n<limit;n++){
+          verify_edge(pixels_cu,next_cu,size_cu,x,y+n,x+1,y+n+1,width,height);
+          verify_edge(pixels_cu,next_cu,size_cu,x+1,y+n,x,y+n+1,width,height);
+        }   
+      }   
+    }   
+
+    //std::cout<<"second loop done"<<std::endl;
+    for ( int y = start; y<=height-offset; y += offset){
+      for(int x =0 ; x< width; x++){
+        verify_edge(pixels_cu,next_cu,size_cu,x,y,x,y+1,width,height);
+      }   
+    }   
+    //std::cout<<"third loop done"<<std::endl;
+    for(int y = start; y <= height-offset; y+= offset){
+      for(int x = 0; x<= width-offset; x+=offset){
+        limit = offset -1; 
+        if(x+limit>width){
+          limit =width - x -1; 
+        }   
+        for( int n = 0;n<limit;n++){
+          verify_edge(pixels_cu,next_cu,size_cu,x+n,y,x+n+1,y+1,width,height);
+          verify_edge(pixels_cu,next_cu,size_cu,x+n+1,y,x+n,y+1,width,height);
+        }   
+      }   
+    }   
+    start = 2*(start+1)-1;
+    offset *=2;
+
+    //double e = CycleTimer::currentSeconds();
+
+    //printf("Iter time: %.3f ms\n",1000.f * (e-s)); 
+
+  }
 
 
 }
-*/
+
+static void attempt_3(std::vector<Pixel> &pixels, int width, int height){
+    Pixel *pixels_cu;
+    std::vector<int> size(width*height,1);
+    std::vector<int> next(width*height,-1);
+    int *size_cu;
+    int *next_cu;
+
+    double ms = CycleTimer::currentSeconds();
+    cudaMalloc((void**) &size_cu, sizeof(int) *width*height);
+    cudaMalloc((void**)&next_cu,sizeof(int)*width*height);
+    cudaMalloc((void**)&pixels_cu,sizeof(Pixel)*width*height);
+    cudaMemcpy(pixels_cu,(Pixel*)&pixels[0],sizeof(Pixel)*width*height,cudaMemcpyHostToDevice);
+    cudaMemcpy(size_cu,(int*)&size[0],sizeof(int)*width*height,cudaMemcpyHostToDevice);
+    cudaMemcpy(next_cu,(int*)&next[0],sizeof(int)*width*height,cudaMemcpyHostToDevice);
+
+    double me = CycleTimer::currentSeconds();
+
+    printf("cuda overhead: %.3f ms\n",1000.f *(me-ms));
+    
+    int start = 0;
+    int rsize = 1;
+    int csize = 2;
+    while(start< std::min(CHUNK_SIZE,width-1) || start < std::min(CHUNK_SIZE,height-1)){
+        double s = CycleTimer::currentSeconds();
+        int blockWidth = std::max(csize,BLOCK_WIDTH);
+        int blockHeight = std::max(rsize,BLOCK_HEIGHT);
+        int rWidthNum = (global_width + blockWidth-1)/blockWidth;
+        int rHeightNum = (global_height + blockHeight -1)/blockHeight;
+        dim3 rgridDim(rWidthNum,rHeightNum);
+        dim3 rblockDim((blockWidth+csize-1)/csize,(blockHeight+rsize-1)/rsize);
+        rowComp<<< rgridDim, rblockDim  >>>(pixels_cu,next_cu,size_cu,start,rsize,csize,global_width,global_height);
+        cudaThreadSynchronize();
+    
+        //both diagonal ops are 'effectless'
+        rowDiagComp<<<rgridDim,rblockDim >>>(pixels_cu,next_cu,size_cu,start,rsize,csize,global_width,global_height);
+        cudaDeviceSynchronize();
+
+    
+        rsize *= 2;
+        blockHeight = std::max(rsize,BLOCK_HEIGHT);
+        rHeightNum = (global_height + blockHeight - 1)/blockHeight;
+        dim3 cgridDim(rWidthNum,rHeightNum);
+        dim3 cblockDim((blockWidth +csize-1)/csize,(blockHeight + rsize-1)/rsize);
+
+        colComp<<<cgridDim,cblockDim >>>(pixels_cu,next_cu,size_cu,start,rsize,csize,global_width,global_height);
+        cudaDeviceSynchronize();
+
+
+        colDiagComp<<<cgridDim,cblockDim >>>(pixels_cu,next_cu,size_cu,start,rsize,csize,global_width,global_height);
+        cudaDeviceSynchronize();
+
+        start = 2*(start +1) - 1;
+        csize *= 2;
+
+        double e = CycleTimer::currentSeconds();
+        printf("iter time: %.3f ms\n",1000.f *(e-s)); 
+    }
+    double scs= CycleTimer::currentSeconds();
+    seq_continue<<<1,1>>>(pixels_cu,next_cu,size_cu,csize,width,height);
+    cudaDeviceSynchronize();
+    double sce = CycleTimer::currentSeconds();
+
+    printf("seq part : %.3f ms\n",1000.f *(sce-scs));
+
+    double rdirS = CycleTimer::currentSeconds();
+    dim3 gridDim((global_width + BLOCK_WIDTH -1) /BLOCK_WIDTH,(global_height + BLOCK_HEIGHT -1)/BLOCK_HEIGHT);
+    dim3 blockDim(BLOCK_WIDTH, BLOCK_HEIGHT);
+    redirect<<<gridDim,blockDim  >>>(pixels_cu,next_cu,global_width,global_height);
+    cudaMemcpy((Pixel*)&pixels[0],pixels_cu,sizeof(Pixel)*width*height,cudaMemcpyDeviceToHost);
+    double rdirE = CycleTimer::currentSeconds();
+
+    printf("redir: %.3f ms\n",1000.f *(rdirE-rdirS));
+
+}
+
