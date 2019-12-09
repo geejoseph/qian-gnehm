@@ -8,6 +8,8 @@
 #include <omp.h>
 double omp_get_wtime(void);
 
+int t = 30;
+
 int global_width;
 int global_height;
 inline bool mergeCriterion(Pixel p1, Pixel p2, int t){
@@ -71,7 +73,7 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
     Pixel B = pixels[bRow][bCol];
     int bSize = size[bRow][bCol];
 
-    if(mergeCriterion(A,B,30)){
+    if(mergeCriterion(A,B,t)){
       //printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
       if(aSize>bSize){
         pixels[aRow][aCol] = newColor(A,B, aSize, bSize);

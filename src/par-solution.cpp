@@ -9,6 +9,9 @@
 #include <omp.h>
 double omp_get_wtime(void);
 
+int t = 30;
+//int chunkfactor = 20;
+
 int global_width;
 int global_height;
 inline bool mergeCriterion(Pixel p1, Pixel p2, int t){
@@ -72,7 +75,7 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
     Pixel B = pixels[bRow][bCol];
     int bSize = size[bRow][bCol];
 
-    if(mergeCriterion(A,B,30)){
+    if(mergeCriterion(A,B,t)){
       //printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
       if(aSize>bSize){
         pixels[aRow][aCol] = newColor(A,B, aSize, bSize);
@@ -91,11 +94,6 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
   }
   return;
 
-}
-
-// Returns 0 if exp < 0 and base**exp otherwise
-int special_exp(int base, int exp) {
-  return exp < 0 ? 0 : (base << exp);
 }
 
 void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
@@ -117,15 +115,19 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
   int iteration = 0;
   int limit;
 
+  //int chunksize;
+  //int n_procs = omp_get_num_procs();
+
   // Sweeping
   sweeps_start_time = omp_get_wtime();
   while (start < width - 1 || start < height -1){
     iteration_start_time = omp_get_wtime();
 
     //Comparing along row
-    #pragma omp parallel for schedule(dynamic)
+    //chunksize = std::max(1, (height/n_procs)/chunkfactor);
+    #pragma omp parallel for //schedule(dynamic, chunksize)
     for (int y = 0; y < height; y++){
-      for (int x = start; x <= width - offset; x += offset){
+        for (int x = start; x <= width - offset; x += offset){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
@@ -134,7 +136,8 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     int max_exp = ceil(log(height) - log(offset/2));
     // log_height (offset/2), so we can write this loop
     // y = 0, offset/2, offset, 2*offset, 4*offset, ... < height
-    #pragma omp parallel for schedule(dynamic) private(limit)
+    //chunksize = std::max(1, (max_exp/n_procs)/chunkfactor);
+    #pragma omp parallel for private(limit) //schedule(dynamic, chunksize)
     for(int exp = -1; exp < max_exp; exp++){
       int y;
       if (exp == -1) {
@@ -142,7 +145,6 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
       } else {
         y = (offset/2) << exp;
       }
-      printf("%d\n", y);
       for(int x = start; x <= width - offset; x += offset){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
@@ -158,7 +160,8 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     //std::cout<<"second loop done"<<std::endl;
 
     // Swapped x and y
-    #pragma omp parallel for schedule(dynamic)
+    //chunksize = std::max(1, (width/n_procs)/chunkfactor);
+    #pragma omp parallel for //schedule(dynamic, chunksize)
     for (int x = 0; x < width; x++) {
       for (int y = start; y <= height-offset; y += offset){
         verify_edge(pixels,next,size,x,y,x,y+1);
@@ -166,8 +169,8 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     }
     //std::cout<<"third loop done"<<std::endl;
 
-
-    #pragma omp parallel for schedule(dynamic) private(limit)
+    //chunksize = std::max(1, (width/offset)/chunkfactor);
+    #pragma omp parallel for private(limit) //schedule(dynamic, chunksize)
     for (int x = 0; x <= width - offset; x += offset) {
       limit = offset - 1;
       if (x + limit > width) {
@@ -192,9 +195,9 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
 
   // Updating final colors for all pixels
   update_start_time = omp_get_wtime();
-  #pragma omp parallel for schedule(dynamic)
+  #pragma omp parallel for //schedule(static)
   for (int i=0;i<height;i++){
-    for (int j=0;j<width;j++){
+      for (int j=0;j<width;j++){
       int index = find(next,i,j);
       int row = index / global_width;
       int col = index % global_width;
