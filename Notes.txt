@@ -5,7 +5,6 @@ Total time used by threads with clock? *real work*
 How to get good times for graphing iterations, diff images, diff steps
 Does any one of the 4 sweeps take most of the time? Rows vs. cols?
 Memory access patterns? Do more rows? Big diff?
-Currently: last and 2nd last iterations take longer in parallel: overhead
 Graph n_threads and speedup?
 
 TODO
