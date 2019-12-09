@@ -122,7 +122,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     iteration_start_time = omp_get_wtime();
 
     //Comparing along row
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(auto)
     for (int y = 0; y < height; y++){
       for (int x = start; x <= width - offset; x += offset){
         verify_edge(pixels,next,size,x,y,x+1,y);
@@ -144,7 +144,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
 
     int max_exp = ceil(log((double)height)/log((double((int)(offset/2))))) - 1;
     // log_height (offset/2) - 1 (so we have y < height)
-    #pragma omp parallel for private(limit)
+    #pragma omp parallel for schedule(auto) private(limit)
     for(int exp = 0; exp < max_exp; exp++){
       int y = offset/2 << exp;
       for(int x = start; x <= width - offset; x += offset){
@@ -184,7 +184,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     //std::cout<<"second loop done"<<std::endl;
 
     // Swapped x and y
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(auto)
     for (int x = 0; x < width; x++) {
       for (int y = start; y <= height-offset; y += offset){
         verify_edge(pixels,next,size,x,y,x,y+1);
@@ -193,7 +193,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
     //std::cout<<"third loop done"<<std::endl;
 
 
-    #pragma omp parallel for private(limit)
+    #pragma omp parallel for schedule(auto) private(limit)
     for (int x = 0; x <= width - offset; x += offset) {
       limit = offset - 1;
       if (x + limit > width) {
@@ -218,6 +218,7 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
 
   // Updating final colors for all pixels
   update_start_time = omp_get_wtime();
+  #pragma omp parallel for schedule(auto)
   for (int i=0;i<height;i++){
     for (int j=0;j<width;j++){
       int index = find(next,i,j);

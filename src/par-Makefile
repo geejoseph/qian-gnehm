@@ -3,7 +3,7 @@ CXX=g++ -m64 -std=c++11 -fopenmp
 CXXFLAGS=-Iobjs/ -O3 -Wall
 LIBS += -L/usr/local/lib -ljpeg
 
-APP_NAME=solution
+APP_NAME=par-solution
 OBJDIR=objs
 default: $(APP_NAME)
 
