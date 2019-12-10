@@ -8,7 +8,7 @@ cp seq-Makefile Makefile
 make
 ./seq-solution img/Lakeside.jpg seq-result
 
-//To display (need to log in with -Y flag)
+//To display (if sshing, may need to log in with -Y flag)
 display par-result.ppm
 
 //To compare side-by-side
