@@ -11,4 +11,18 @@
 % Their claim is sweep time goes sublinearly with image area
 % Although total time goes linearly (makes sense with alloc no speedup)
 
-% Do we include update time with sweeps time? Is this their "Extraction"?
+% Time per iteration seq - time series for each image with label of name and
+% size
+
+% Time of first sweeps
+
+% Plot with total size vs. process time par and seq
+% 2d plot with dimensions vs. process time par and seq
+
+% Plot with size vs. sweep time
+% 2d plot with dimensions vs. sweep time
+
+% Plot with size vs. update time par and seq
+
+% Plot with size vs. speedup
+% 2d plot with dimensions vs. speedup
