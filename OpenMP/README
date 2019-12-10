@@ -1,0 +1,18 @@
+//To compile par
+cp par-Makefile Makefile
+make
+./par-solution img/Lakeside.jpg par-result
+
+//To compile seq
+cp seq-Makefile Makefile
+make
+./seq-solution img/Lakeside.jpg seq-result
+
+//To display (need to log in with -Y flag)
+display par-result.ppm
+
+//To compare side-by-side
+convert par-result.ppm seq-result.ppm -append compare.ppm
+
+//To check difference
+compare -compose src par-result.ppm seq-result.ppm difference.ppm
