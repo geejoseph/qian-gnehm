@@ -118,12 +118,12 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
   //int chunksize;
   //int n_procs = omp_get_num_procs();
 
-  int n_regions = global_width*global_height;
-  int new_region_width = 1; //dimension that this sweep isn't increasing
-  // Not great name
+  int run_length = 1; //each run is a piece of split up row or col,
+  // this is the length of the dimension along which we move in the loop
   // n_regions halves after every col and row sweep
   // but var needs to be halved before to keep track
-  // other thing doubles before every row sweep
+  // run_length doubles before every row sweep
+  int n_cols, n_regions;
 
   // Sweeping
   sweeps_start_time = omp_get_wtime();
@@ -132,10 +132,15 @@ void process(std::vector<std::vector<Pixel>>& pixels, int width, int height){
 
     //Comparing along row
     //chunksize = std::max(1, /(n_procs*chunkfactor));
-    #pragma omp parallel for //schedule(dynamic, chunksize)
-    for (int r = 0;
+    n_cols = (width - 1 - start)/offset;
+    n_regions = n_cols*height;
+    //#pragma omp parallel for //schedule(dynamic, chunksize)
+    for (int r = 0; r < n_regions; r++) {
+      int x = start + (r/height)*offset;
       //for (int x = start; x <= width - 2; x += offset){
-      for (int y = 0; y < height; y++){
+      int y_start = r % height;
+      int y_end = std::min(height, y_start + run_length);
+      for (int y = y_start; y < y_end; y++){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
