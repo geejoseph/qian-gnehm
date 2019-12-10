@@ -124,21 +124,27 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
       }
     }
     //std::cout<<"row comparison done"<<std::endl;
+    // y = 0, offset/2, offset, 2*offset, 4*offset, ..., height - 2
+    int count = 0;
     for(int y = 0; y<=height-2; y*=2){
+      if (count == 1) {
+        y = offset/2;
+        if (y > height - 2) {
+          break;
+        }
+      }
       for(int x = start;x<=width-2;x+=offset){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
-        if(y + limit > height){
-          limit = height - y -1;
+        if(y + limit >= height){
+          limit = height - y -2;
         }
         for(int n=0;n<limit;n++){
           verify_edge(pixels,next,size,x,  y+n,x+1,y+n+1);
           verify_edge(pixels,next,size,x+1,y+n,x,  y+n+1);
         }
       }
-      if (y == 0) {
-        y = offset/2;
-      }
+      count++;
     }
 
     //std::cout<<"second loop done"<<std::endl;
@@ -151,8 +157,8 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
     for(int y = start; y <= height-2; y+= offset){
       for(int x = 0; x<= width-2; x+=offset){
         limit = offset -1;
-        if(x+limit>width){
-          limit =width - x -1;
+        if(x+limit>=width){
+          limit =width - x -2;
         }
         for( int n = 0;n<limit;n++){
           verify_edge(pixels,next,size,x+n,y,x+n+1,y+1);
