@@ -1,11 +1,10 @@
 NOTES
 8 cores, x2 hyperthreading so 16 threads
-What is good ratio of number of tasks vs. threads? x4? x10?
-Total time used by threads with clock? *real work*
 How to get good times for graphing iterations, diff images, diff steps
 Does any one of the 4 sweeps take most of the time? Rows vs. cols?
 Memory access patterns? Do more rows? Big diff?
-Graph n_threads and speedup?
+Had 16 GB or RAM, Intel Core i7 CPU for thread version,
+We also had Intel Core i7 CPU but eight of them for our parallel implementation. Not sure if they used multiple cores, although they still had hyperthreading (so at least 2 threads?)\\
 
 TODO
 1. More fine-grained, thread for each part of row or col that owns regions
