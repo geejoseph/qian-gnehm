@@ -48,9 +48,9 @@ int main(){
   //savePPM(img,"img/einstein.ppm",width,height);
   //return 0;
   double startTime = CycleTimer::currentSeconds();
-  cu_process(img,width,height);
+  seq_process(img,width,height);
   double endTime = CycleTimer::currentSeconds();
   printf("Time: %3.f ms\n",1000.f *(endTime-startTime));
-  savePPM(img,"img/einstein_cu.ppm",width,height);
+  savePPM(img,"img/World.ppm",width,height);
   return 0;
 }

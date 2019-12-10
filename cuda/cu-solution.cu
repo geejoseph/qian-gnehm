@@ -48,8 +48,8 @@ __device__ int find(int *next,int srow,int scol,int global_width,int global_heig
   //int col = scol;
   int pos = srow * global_width + scol;
   for(int i=0;i<global_width*global_height;i++){
-    assert(pos>=0);
-    assert(pos<= global_width*global_height);
+    //assert(pos>=0);
+    //assert(pos<= global_width*global_height);
     //std::cout<<"in find"<<std::endl;
     int index = next[pos];
     if(index == -1){
@@ -136,7 +136,7 @@ __device__ __inline__ int shared_find(int *next_temp, int sr, int sc, int width,
 __device__ void verify_edge(Pixel *pixels_cu, int *next_cu,
     int *size_cu, int col1, int row1, int col2, int row2,int global_width, int global_height) {
   //sanity check
-  assert(col1< global_width);
+  /*assert(col1< global_width);
   assert(col1>=0);
   assert(col2 < global_width);
   assert(col2 >= 0);
@@ -144,12 +144,13 @@ __device__ void verify_edge(Pixel *pixels_cu, int *next_cu,
   assert(row1 >=0);
   assert(row2 < global_height);
   assert(row2 >=0);
+  */
   int aIndex = find(next_cu,row1,col1,global_width,global_height);
 
   int bIndex = find(next_cu,row2,col2,global_width,global_height);
 
-  assert(aIndex!= -1 && bIndex != -1);
-  assert(aIndex<global_width*global_height && bIndex<global_height*global_width);
+  //assert(aIndex!= -1 && bIndex != -1);
+  //assert(aIndex<global_width*global_height && bIndex<global_height*global_width);
   if(aIndex !=  bIndex){
     Pixel A = pixels_cu[aIndex];
     int aSize = size_cu[aIndex];
@@ -220,7 +221,7 @@ static void attempt_3(std::vector<Pixel> &pixels, int width, int height);
 void cu_process(std::vector<Pixel> &pixels, int width, int height){
   global_width = width;
   global_height = height;
-  attempt_3(pixels,width,height);
+  attempt_1(pixels,width,height);
   
   return;
 }

@@ -1,0 +1,13 @@
+Note that this directory is designated for the cuda solution and its accompanying sequential version.
+
+To test simply run make and then ./solution
+
+To change test images simply edit the image path string within the main file. 
+
+You can alternate between the two versions by calling either seq_process or cu_process
+
+Finally, to test the different cuda attempts, within cu_process in cu-solution.cu,
+simply change between attempt_{1,2,3} (1 is naive, 2 is shared mem, 3 is hybrid)
+
+Please let us know if there are any questions!
+
