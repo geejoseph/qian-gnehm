@@ -4,7 +4,7 @@
 #include "pixel.h"
 #include <vector>
 
-void blur(std::vector<std::vector<Pixel>> &pixels,double sigma);
+void blur(std::vector<Pixel> &pixels,double sigma,int width,int height);
 
 
 #endif

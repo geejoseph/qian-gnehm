@@ -35,15 +35,15 @@ static void printKernel(const double (&kernel)[KERNEL_SIZE][KERNEL_SIZE]){
     std::cout<<std::endl;
   }
 }
-static Pixel convolve(const std::vector<std::vector<Pixel>> &pixels,int i ,
-    int j, const double kernel[KERNEL_SIZE][KERNEL_SIZE]){
+static Pixel convolve(const std::vector<Pixel> &pixels,int i ,
+    int j, const double kernel[KERNEL_SIZE][KERNEL_SIZE],int width,int height){
   Pixel newP;
   newP.r=0;
   newP.g=0;
   newP.b=0;
   for(int x=0;x<KERNEL_SIZE;x++){
     for(int y=0;y<KERNEL_SIZE;y++){
-      Pixel p =  pixels[i-HALF_KERN_SIZE + x][j - HALF_KERN_SIZE + y];
+      Pixel p =  pixels[(i-HALF_KERN_SIZE + x)*width + j - HALF_KERN_SIZE + y];
       double weight = kernel[x][y];
       newP.r += p.r * weight;
       newP.g += p.g * weight;
@@ -52,24 +52,22 @@ static Pixel convolve(const std::vector<std::vector<Pixel>> &pixels,int i ,
   }
   return newP;
 }
-void blur(std::vector<std::vector<Pixel>> &pixels,double sigma){
+void blur(std::vector<Pixel> &pixels,double sigma,int width, int height){
   double kernel[KERNEL_SIZE][KERNEL_SIZE];
-  std::vector<std::vector<Pixel>> newPixels(pixels.size(),std::vector<Pixel>(pixels[0].size()));
+  std::vector<Pixel> newPixels(width*height);
   fillKernel(sigma,kernel);
   printKernel(kernel);
-  for(int i=HALF_KERN_SIZE;i<(int)pixels.size()-HALF_KERN_SIZE;i++){
-    for(int j=HALF_KERN_SIZE;j<(int)pixels[0].size()-HALF_KERN_SIZE;j++){
-      newPixels[i][j] = convolve(pixels, i,j,kernel);
+  for(int i=HALF_KERN_SIZE;i<height-HALF_KERN_SIZE;i++){
+    for(int j=HALF_KERN_SIZE;j<width-HALF_KERN_SIZE;j++){
+      newPixels[i*width+j] = convolve(pixels, i,j,kernel,width,height);
     }
     //std::cout<<"iterations"<<std::endl;
   }
 
-  std::cout<<"finished convolving";
-  for(int i=HALF_KERN_SIZE;i<(int)pixels.size() - HALF_KERN_SIZE;i++){
-    for(int j = HALF_KERN_SIZE;j<(int)pixels[0].size() - HALF_KERN_SIZE;j++){
-      pixels[i][j] = newPixels[i][j];
+  for(int i=HALF_KERN_SIZE;i<height - HALF_KERN_SIZE;i++){
+    for(int j = HALF_KERN_SIZE;j<width - HALF_KERN_SIZE;j++){
+      pixels[i*width+j] = newPixels[i*width+j];
     }
   }
-  std::cout<<"about to return";
   return;
 }

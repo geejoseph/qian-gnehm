@@ -5,15 +5,16 @@
 #include "imgSeg.h"
 #include <cstdint>
 #include <assert.h>
+#include "CycleTimer.h"
 
-int global_width;
-int global_height;
+static int global_width;
+static int global_height;
 inline bool mergeCriterion(Pixel p1, Pixel p2, int t){
   return ((int)p1.r - (int)p2.r)*((int)p1.r - (int)p2.r) + ((int)p1.g - (int)p2.g)*((int)p1.g -(int) p2.g) +
     ((int)p1.b - (int)p2.b) * ((int)p1.b - (int)p2.b) < t*t;
 }
 
-Pixel newColor(Pixel A, Pixel B, int sizeA, int sizeB){
+static Pixel newColor(Pixel A, Pixel B, int sizeA, int sizeB){
   int totalSize = sizeA + sizeB;
   Pixel newP;
   newP.r = (uint8_t)(((int)A.r * sizeA +(int) B.r * sizeB)/(totalSize));
@@ -24,7 +25,7 @@ Pixel newColor(Pixel A, Pixel B, int sizeA, int sizeB){
   return newP;
 }
 
-int find(std::vector<std::vector<int>> &next,int srow,int scol){
+static int find(std::vector<std::vector<int>> &next,int srow,int scol){
   int row = srow;
   int col = scol;
   while(1){
@@ -48,7 +49,7 @@ int find(std::vector<std::vector<int>> &next,int srow,int scol){
   }
 }
 
-void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vector<int>> &next,
+static void verify_edge(std::vector<Pixel> &pixels, std::vector<std::vector<int>> &next,
     std::vector<std::vector<int>> &size, int col1, int row1, int col2, int row2) {
   //sanity check
   assert(col1< global_width && col1>=0 && col2 < global_width && col2 >= 0 && row1 < global_height && row1 >=0
@@ -63,24 +64,26 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
   int bCol = bIndex % global_width;
 
   if(aRow != bRow || aCol != bCol){
-    Pixel A = pixels[aRow][aCol];
+    Pixel A = pixels[aRow*global_width+aCol];
     int aSize = size[aRow][aCol];
 
-    Pixel B = pixels[bRow][bCol];
+    Pixel B = pixels[bRow*global_width+bCol];
     int bSize = size[bRow][bCol];
 
     if(mergeCriterion(A,B,30)){
-      printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
+      //printf("A r: %d g: %d b: %d B r: %d g: %d b: %d\n",A.r,A.g,A.b,B.r,B.g,B.b);
       if(aSize>bSize){
-        pixels[aRow][aCol] = newColor(A,B, aSize, bSize);
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
+        pixels[aRow*global_width+aCol] = newColor(A,B, aSize, bSize);
+        //printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
+        //    pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
         next[bRow][bCol] = aIndex;
         size[aRow][aCol] += bSize;
       }
       else{
-        pixels[bRow][bCol] = newColor(A, B, aSize, bSize);
+        pixels[bRow*global_width+bCol] = newColor(A, B, aSize, bSize);
 
-        printf("newCol r: %d g: %d b: %d\n",pixels[aRow][aCol].r,pixels[aRow][aCol].g,pixels[aRow][aCol].b);
+        //printf("newCol r: %d g: %d b: %d\n",pixels[aRow*global_width+aCol].r,
+        //    pixels[aRow*global_width+aCol].g,pixels[aRow*global_width+aCol].b);
         next[aRow][aCol] = bIndex;
         size[bRow][bCol] += aSize;
       }
@@ -89,8 +92,14 @@ void verify_edge(std::vector<std::vector<Pixel>> &pixels, std::vector<std::vecto
   return;
 
 }
+static void process_mixed(std::vector<Pixel> &pixels,int width,int height);
 
-void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
+void seq_process(std::vector<Pixel> &pixels,int width, int height){
+  process_mixed(pixels,width,height);
+  return;
+}
+
+static void process_mixed(std::vector<Pixel>& pixels,int width, int height){
   global_height = height;
   global_width = width;
   std::vector<std::vector<int>> next(height,std::vector<int>(width,-1));
@@ -99,18 +108,15 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
   int offset = 2;
   int limit;
   while(start < width - 1 || start < height -1){
+    double s = CycleTimer::currentSeconds();
     //Comparing along row
     for(int y =0;y<height;y++){
       for(int x = start;x<=width-offset;x+=offset){
         verify_edge(pixels,next,size,x,y,x+1,y);
       }
     }
-    std::cout<<"row comparison done"<<std::endl;
-    int count = 0;
-    for(int y = 0; y<height; y*=2){
-      if(count == 1){
-        y = offset/2;
-      }
+    //std::cout<<"row comparison done"<<std::endl;
+    for(int y = 0; y<height; y+=offset/2){
       for(int x = start;x<=width-offset;x+=offset){
         limit = offset/2 - 1;
         //guarantee y+limit <= height
@@ -122,16 +128,15 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
           verify_edge(pixels,next,size,x+1,y+n,x,y+n+1);
         }
       }
-      count++;
     }
 
-    std::cout<<"second loop done"<<std::endl;
+    //std::cout<<"second loop done"<<std::endl;
     for ( int y = start; y<=height-offset; y += offset){
       for(int x =0 ; x< width; x++){
         verify_edge(pixels,next,size,x,y,x,y+1);
       }  
     }
-    std::cout<<"third loop done"<<std::endl;
+    //std::cout<<"third loop done"<<std::endl;
     for(int y = start; y <= height-offset; y+= offset){
       for(int x = 0; x<= width-offset; x+=offset){
         limit = offset -1;
@@ -146,15 +151,24 @@ void process(std::vector<std::vector<Pixel>>& pixels,int width, int height){
     }
     start = 2*(start+1)-1;
     offset *=2;
+
+    double e = CycleTimer::currentSeconds();
+
+    printf("Iter time: %.3f ms\n",1000.f * (e-s));
   }
 
+  double rs = CycleTimer::currentSeconds();
   for(int i=0;i<height;i++){
     for(int j=0;j<width;j++){
       int index = find(next,i,j);
       int row = index / global_width;
       int col = index % global_width;
-      pixels[i][j]=pixels[row][col];
+      pixels[i*width + j]=pixels[row*width + col];
     }
   }
+
+  double re = CycleTimer::currentSeconds();
+
+  printf("Redir time: %.3f ms\n",1000.f *(re-rs));
   return;
 }
